@@ -21,19 +21,17 @@
 
 @defs(Testable)
 
-- (NSString *)testString {
-    return @"test";
-}
-
 - (void)showTestString {
     NSLog(@"testString: %@", self.testString);
 }
 
 @end
 
+
 @interface Object : NSObject <Testable>
 
 @end
+
 
 @implementation Object
 
@@ -42,6 +40,7 @@
 }
 
 @end
+
 
 @interface ViewController ()
 

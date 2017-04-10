@@ -22,7 +22,7 @@ static PKExtendedProtocol *allExtendedProtocols = NULL;
 static pthread_mutex_t protocolsLoadingLock = PTHREAD_MUTEX_INITIALIZER;
 static size_t extendedProtcolCount = 0, extendedProtcolCapacity = 0;
 
-Method *_pk_extension_create_merged(Method *existMethods, unsigned existMethodCount, Method *appendingMethods, unsigned appendingMethodCount) {
+Method *_hw_extension_create_merged(Method *existMethods, unsigned existMethodCount, Method *appendingMethods, unsigned appendingMethodCount) {
     
     if (existMethodCount == 0) {
         return appendingMethods;
@@ -34,12 +34,12 @@ Method *_pk_extension_create_merged(Method *existMethods, unsigned existMethodCo
     return mergedMethods;
 }
 
-void _pk_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerClass) {
+void _hw_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerClass) {
     
     // Instance methods
     unsigned appendingInstanceMethodCount = 0;
     Method *appendingInstanceMethods = class_copyMethodList(containerClass, &appendingInstanceMethodCount);
-    Method *mergedInstanceMethods = _pk_extension_create_merged(extendedProtocol->instanceMethods,
+    Method *mergedInstanceMethods = _hw_extension_create_merged(extendedProtocol->instanceMethods,
                                                                 extendedProtocol->instanceMethodCount,
                                                                 appendingInstanceMethods,
                                                                 appendingInstanceMethodCount);
@@ -50,7 +50,7 @@ void _pk_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerCl
     // Class methods
     unsigned appendingClassMethodCount = 0;
     Method *appendingClassMethods = class_copyMethodList(object_getClass(containerClass), &appendingClassMethodCount);
-    Method *mergedClassMethods = _pk_extension_create_merged(extendedProtocol->classMethods,
+    Method *mergedClassMethods = _hw_extension_create_merged(extendedProtocol->classMethods,
                                                              extendedProtocol->classMethodCount,
                                                              appendingClassMethods,
                                                              appendingClassMethodCount);
@@ -59,7 +59,7 @@ void _pk_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerCl
     extendedProtocol->classMethodCount += appendingClassMethodCount;
 }
 
-void _pk_extension_load(Protocol *protocol, Class containerClass) {
+void _hw_extension_load(Protocol *protocol, Class containerClass) {
     
     pthread_mutex_lock(&protocolsLoadingLock);
     
@@ -94,12 +94,12 @@ void _pk_extension_load(Protocol *protocol, Class containerClass) {
         extendedProtcolCount++;
     }
     
-    _pk_extension_merge(&(allExtendedProtocols[resultIndex]), containerClass);
+    _hw_extension_merge(&(allExtendedProtocols[resultIndex]), containerClass);
     
     pthread_mutex_unlock(&protocolsLoadingLock);
 }
 
-static void _pk_extension_inject_class(Class targetClass, PKExtendedProtocol extendedProtocol) {
+static void _hw_extension_inject_class(Class targetClass, PKExtendedProtocol extendedProtocol) {
     
     for (unsigned methodIndex = 0; methodIndex < extendedProtocol.instanceMethodCount; ++methodIndex) {
         Method method = extendedProtocol.instanceMethods[methodIndex];
@@ -132,7 +132,7 @@ static void _pk_extension_inject_class(Class targetClass, PKExtendedProtocol ext
     }
 }
 
-__attribute__((constructor)) static void _pk_extension_inject_entry(void) {
+__attribute__((constructor)) static void _hw_extension_inject_entry(void) {
     
     pthread_mutex_lock(&protocolsLoadingLock);
     
@@ -147,7 +147,7 @@ __attribute__((constructor)) static void _pk_extension_inject_entry(void) {
                 if (!class_conformsToProtocol(class, extendedProtcol.protocol)) {
                     continue;
                 }
-                _pk_extension_inject_class(class, extendedProtcol);
+                _hw_extension_inject_class(class, extendedProtcol);
             }
         }
     }
