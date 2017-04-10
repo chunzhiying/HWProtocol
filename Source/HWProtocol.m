@@ -105,7 +105,9 @@ static void _hw_extension_inject_class(Class targetClass, PKExtendedProtocol ext
         Method method = extendedProtocol.instanceMethods[methodIndex];
         SEL selector = method_getName(method);
         
-        if (class_getInstanceMethod(targetClass, selector)) {
+        Method hadAddMethod = class_getInstanceMethod(targetClass, selector);
+        if (hadAddMethod) {
+            method_exchangeImplementations(hadAddMethod, method);
             continue;
         }
         
@@ -122,7 +124,10 @@ static void _hw_extension_inject_class(Class targetClass, PKExtendedProtocol ext
         if (selector == @selector(load) || selector == @selector(initialize)) {
             continue;
         }
-        if (class_getInstanceMethod(targetMetaClass, selector)) {
+        
+        Method hadAddMethod = class_getInstanceMethod(targetMetaClass, selector);
+        if (hadAddMethod) {
+            method_exchangeImplementations(hadAddMethod, method);
             continue;
         }
         
