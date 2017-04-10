@@ -12,6 +12,7 @@
 
 typedef struct {
     Protocol *__unsafe_unretained protocol;
+    Class __unsafe_unretained targetClass;
     Method *instanceMethods;
     unsigned instanceMethodCount;
     Method *classMethods;
@@ -59,9 +60,11 @@ void _hw_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerCl
     extendedProtocol->classMethodCount += appendingClassMethodCount;
 }
 
-void _hw_extension_load(Protocol *protocol, Class containerClass) {
+void _hw_extension_load(Protocol *protocol, NSObject* container) {
     
     pthread_mutex_lock(&protocolsLoadingLock);
+    
+    Class containerClass = container.class;
     
     if (extendedProtcolCount >= extendedProtcolCapacity) {
         size_t newCapacity = 0;
@@ -76,7 +79,8 @@ void _hw_extension_load(Protocol *protocol, Class containerClass) {
     
     size_t resultIndex = SIZE_T_MAX;
     for (size_t index = 0; index < extendedProtcolCount; ++index) {
-        if (allExtendedProtocols[index].protocol == protocol) {
+        if (allExtendedProtocols[index].protocol == protocol
+            && allExtendedProtocols[index].targetClass == [container superclass]) {
             resultIndex = index;
             break;
         }
@@ -85,6 +89,7 @@ void _hw_extension_load(Protocol *protocol, Class containerClass) {
     if (resultIndex == SIZE_T_MAX) {
         allExtendedProtocols[extendedProtcolCount] = (PKExtendedProtocol){
             .protocol = protocol,
+            .targetClass = [container superclass],
             .instanceMethods = NULL,
             .instanceMethodCount = 0,
             .classMethods = NULL,
@@ -149,7 +154,8 @@ __attribute__((constructor)) static void _hw_extension_inject_entry(void) {
             PKExtendedProtocol extendedProtcol = allExtendedProtocols[protocolIndex];
             for (unsigned classIndex = 0; classIndex < classCount; ++classIndex) {
                 Class class = allClasses[classIndex];
-                if (!class_conformsToProtocol(class, extendedProtcol.protocol)) {
+                if (!class_conformsToProtocol(class, extendedProtcol.protocol)
+                    || extendedProtcol.targetClass != class) {
                     continue;
                 }
                 _hw_extension_inject_class(class, extendedProtcol);
