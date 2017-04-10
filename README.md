@@ -1,2 +1,4 @@
 # HWProtocol
-Protocol extension for Objective-C
+
+
+``` Cocoapods``` : ```pod 'HWProtocol', '= 1.0.1'```
