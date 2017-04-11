@@ -118,7 +118,7 @@ static void _hw_extension_inject_class(Class targetClass, PKExtendedProtocol ext
         
         Method hadAddMethod = class_getInstanceMethod(targetClass, selector);
         if (hadAddMethod) {
-            method_exchangeImplementations(hadAddMethod, method);
+//            method_exchangeImplementations(hadAddMethod, method);
             continue;
         }
         
@@ -138,7 +138,7 @@ static void _hw_extension_inject_class(Class targetClass, PKExtendedProtocol ext
         
         Method hadAddMethod = class_getInstanceMethod(targetMetaClass, selector);
         if (hadAddMethod) {
-            method_exchangeImplementations(hadAddMethod, method);
+//            method_exchangeImplementations(hadAddMethod, method);
             continue;
         }
         

@@ -20,6 +20,14 @@
 @interface Object2 : NSObject <Testable> @end @implementation Object2 @end
 @interface ViewController () <Testable> @end
 
+@defs(Testable, where(ViewController))
+
+- (void)showTestString {
+    NSLog(@"ccc");
+}
+
+@end
+
 @defs(Testable)
 
 - (void)showTestString {
@@ -28,13 +36,7 @@
 
 @end
 
-@defs(Testable, where(ViewController))
 
-- (void)showTestString {
-    NSLog(@"ccc");
-}
-
-@end
 
 @implementation ViewController
 
@@ -44,6 +46,10 @@
     [[Object new] showTestString];
     [[Object2 new] showTestString];
     [self showTestString];
+}
+
+- (void)showTestString {
+    NSLog(@"bbb");
 }
 
 @end
