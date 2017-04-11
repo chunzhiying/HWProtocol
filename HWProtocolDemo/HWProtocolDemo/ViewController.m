@@ -11,52 +11,28 @@
 
 @protocol Testable <NSObject>
 
-@required
-@property (nonatomic, strong, readonly) NSString *testString;
-
 @optional HWProtocolExtension
 - (void)showTestString;
-+ (void)show;
 
 @end
 
-
-@interface Object : NSObject <Testable>
-
-- (NSString *)aaa;
-
-@end
-
-
-@implementation Object
-
-- (NSString *)aaa {
-    return @"aaa";
-}
-
-- (NSString *)testString {
-    return @"test Object";
-}
-
-@end
+@interface Object : NSObject <Testable> @end @implementation Object @end
+@interface Object2 : NSObject <Testable> @end @implementation Object2 @end
+@interface ViewController () <Testable> @end
 
 @defs(Testable)
 
 - (void)showTestString {
-    NSLog(@"ccc");
+    NSLog(@"ddd");
 }
 
 @end
 
-@defs(Testable, Where(Object))
+@defs(Testable, where(ViewController))
 
 - (void)showTestString {
-    NSLog(@"testString: %@", [self aaa]);
+    NSLog(@"ccc");
 }
-
-@end
-
-@interface ViewController () <Testable>
 
 @end
 
@@ -66,16 +42,8 @@
     [super viewDidLoad];
     
     [[Object new] showTestString];
+    [[Object2 new] showTestString];
     [self showTestString];
-}
-
-
-@end
-
-@defs(Testable, Where(ViewController))
-
-- (void)showTestString {
-    NSLog(@"testString: %@", @"bbb");
 }
 
 @end

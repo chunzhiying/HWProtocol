@@ -10,6 +10,12 @@
 #import "HWProtocol.h"
 #import <pthread.h>
 
+#ifdef DEBUG
+#define NSLog(...) NSLog(__VA_ARGS__)
+#else
+#define NSLog(...)
+#endif
+
 typedef struct {
     Protocol *__unsafe_unretained protocol;
     Class __unsafe_unretained targetClass;
@@ -149,25 +155,33 @@ __attribute__((constructor)) static void _hw_extension_inject_entry(void) {
     unsigned classCount = 0;
     Class *allClasses = objc_copyClassList(&classCount);
     
+    NSLog(@"HWProtocol begin");
     @autoreleasepool {
         for (unsigned protocolIndex = 0; protocolIndex < extendedProtcolCount; ++protocolIndex) {
             PKExtendedProtocol extendedProtcol = allExtendedProtocols[protocolIndex];
             for (unsigned classIndex = 0; classIndex < classCount; ++classIndex) {
                 Class class = allClasses[classIndex];
-                if (!class_conformsToProtocol(class, extendedProtcol.protocol)
-                    || extendedProtcol.targetClass != class) {
+                if (!class_conformsToProtocol(class, extendedProtcol.protocol) \
+                    || [NSStringFromClass(class) hasPrefix:@"__HWContainer_"]) {
                     continue;
                 }
-                _hw_extension_inject_class(class, extendedProtcol);
+                if (extendedProtcol.targetClass != [NSObject class] && extendedProtcol.targetClass == class) {
+                    _hw_extension_inject_class(class, extendedProtcol);
+                    break;
+                }
+                if (extendedProtcol.targetClass == [NSObject class]) {
+                    _hw_extension_inject_class(class, extendedProtcol);
+                    continue;
+                }
             }
         }
     }
+    NSLog(@"HWProtocol end");
+    
     pthread_mutex_unlock(&protocolsLoadingLock);
     
     free(allClasses);
     free(allExtendedProtocols);
     extendedProtcolCount = 0, extendedProtcolCapacity = 0;
 }
-
-
 

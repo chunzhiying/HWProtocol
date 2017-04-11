@@ -9,12 +9,10 @@
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 
+#define defs _hw_extension // use @defs(your_protocol_name) or @defs(your_protocol_name, where(special_class_name))
+
 #define HWProtocolExtension
-#define Where($class) $class
-
-// For a magic reserved keyword color, use @defs(your_protocol_name)
-#define defs _hw_extension
-
+#define where($class) $class
 
 // Utils
 #define HW_MACROCAT_(x, y)  x##y
