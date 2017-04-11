@@ -16,24 +16,23 @@
 
 @optional HWProtocolExtension
 - (void)showTestString;
-
-@end
-
-@defs(Testable)
-
-- (void)showTestString {
-    NSLog(@"testString: %@", self.testString);
-}
++ (void)show;
 
 @end
 
 
 @interface Object : NSObject <Testable>
 
+- (NSString *)aaa;
+
 @end
 
 
 @implementation Object
+
+- (NSString *)aaa {
+    return @"aaa";
+}
 
 - (NSString *)testString {
     return @"test Object";
@@ -41,8 +40,23 @@
 
 @end
 
+@defs(Testable)
 
-@interface ViewController ()
+- (void)showTestString {
+    NSLog(@"ccc");
+}
+
+@end
+
+@defs(Testable, Where(Object))
+
+- (void)showTestString {
+    NSLog(@"testString: %@", [self aaa]);
+}
+
+@end
+
+@interface ViewController () <Testable>
 
 @end
 
@@ -52,6 +66,16 @@
     [super viewDidLoad];
     
     [[Object new] showTestString];
+    [self showTestString];
+}
+
+
+@end
+
+@defs(Testable, Where(ViewController))
+
+- (void)showTestString {
+    NSLog(@"testString: %@", @"bbb");
 }
 
 @end

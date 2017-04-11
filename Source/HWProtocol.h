@@ -10,7 +10,7 @@
 #import <objc/runtime.h>
 
 #define HWProtocolExtension
-#define WhereSelf($class) $class
+#define Where($class) $class
 
 // For a magic reserved keyword color, use @defs(your_protocol_name)
 #define defs _hw_extension
