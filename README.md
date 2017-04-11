@@ -1,4 +1,4 @@
 # HWProtocol
 
 
-``` Cocoapods``` : ```pod 'HWProtocol', '= 1.1.2'```
+``` Cocoapods``` : ```pod 'HWProtocol', '= 1.1.3'```
