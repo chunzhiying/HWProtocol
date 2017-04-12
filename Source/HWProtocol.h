@@ -23,8 +23,8 @@
 
 #define HW_META_at2(_0, _1, ...)      HW_META_head(__VA_ARGS__)
 
-#define HW_META_at(N, ...)            HW_MACROCAT(HW_META_at, 2)(__VA_ARGS__)
-#define HW_META_argCount(...)         HW_META_at(2, __VA_ARGS__, 2, 1)
+#define HW_META_at(N, ...)            HW_MACROCAT(HW_META_at, 5)(__VA_ARGS__)
+#define HW_META_argCount(...)         HW_META_at(5, __VA_ARGS__, 5, 4, 3, 2, 1)
 
 
 // Interface
