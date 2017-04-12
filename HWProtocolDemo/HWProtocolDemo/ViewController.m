@@ -16,11 +16,13 @@
 
 @end
 
+@protocol aaa <NSObject> @end
+
 @interface Object : NSObject <Testable> @end @implementation Object @end
-@interface Object2 : NSObject <Testable> @end @implementation Object2 @end
+@interface Object2 : NSObject <Testable, aaa> @end @implementation Object2 @end
 @interface ViewController () <Testable> @end
 
-@defs(Testable, where(ViewController))
+@defs(Testable, whereProtocol(aaa))
 
 - (void)showTestString {
     NSLog(@"ccc");
@@ -28,7 +30,7 @@
 
 @end
 
-@defs(Testable)
+@defs(Testable, whereClass(Object))
 
 - (void)showTestString {
     NSLog(@"ddd");
@@ -36,20 +38,20 @@
 
 @end
 
+@defs(Testable)
 
+- (void)showTestString {
+    NSLog(@"bbb");
+}
+
+@end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
-    [super viewDidLoad];
-    
     [[Object new] showTestString];
     [[Object2 new] showTestString];
     [self showTestString];
-}
-
-- (void)showTestString {
-    NSLog(@"bbb");
 }
 
 @end

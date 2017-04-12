@@ -19,6 +19,7 @@
 typedef struct {
     Protocol *__unsafe_unretained protocol;
     Class __unsafe_unretained targetClass;
+    Protocol *__unsafe_unretained targetProtocol;
     Method *instanceMethods;
     unsigned instanceMethodCount;
     Method *classMethods;
@@ -66,7 +67,7 @@ void _hw_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerCl
     extendedProtocol->classMethodCount += appendingClassMethodCount;
 }
 
-void _hw_extension_load(Protocol *protocol, NSObject* container) {
+void _hw_extension_load(Protocol *protocol, NSObject *container, Protocol *targetProtocol) {
     
     pthread_mutex_lock(&protocolsLoadingLock);
     
@@ -86,7 +87,8 @@ void _hw_extension_load(Protocol *protocol, NSObject* container) {
     size_t resultIndex = SIZE_T_MAX;
     for (size_t index = 0; index < extendedProtcolCount; ++index) {
         if (allExtendedProtocols[index].protocol == protocol
-            && allExtendedProtocols[index].targetClass == [container superclass]) {
+            && allExtendedProtocols[index].targetClass == [container superclass]
+            && allExtendedProtocols[index].targetProtocol == targetProtocol) {
             resultIndex = index;
             break;
         }
@@ -96,6 +98,7 @@ void _hw_extension_load(Protocol *protocol, NSObject* container) {
         allExtendedProtocols[extendedProtcolCount] = (PKExtendedProtocol){
             .protocol = protocol,
             .targetClass = [container superclass],
+            .targetProtocol = targetProtocol,
             .instanceMethods = NULL,
             .instanceMethodCount = 0,
             .classMethods = NULL,
@@ -118,7 +121,6 @@ static void _hw_extension_inject_class(Class targetClass, PKExtendedProtocol ext
         
         Method hadAddMethod = class_getInstanceMethod(targetClass, selector);
         if (hadAddMethod) {
-//            method_exchangeImplementations(hadAddMethod, method);
             continue;
         }
         
@@ -138,7 +140,6 @@ static void _hw_extension_inject_class(Class targetClass, PKExtendedProtocol ext
         
         Method hadAddMethod = class_getInstanceMethod(targetMetaClass, selector);
         if (hadAddMethod) {
-//            method_exchangeImplementations(hadAddMethod, method);
             continue;
         }
         
@@ -161,17 +162,18 @@ __attribute__((constructor)) static void _hw_extension_inject_entry(void) {
             PKExtendedProtocol extendedProtcol = allExtendedProtocols[protocolIndex];
             for (unsigned classIndex = 0; classIndex < classCount; ++classIndex) {
                 Class class = allClasses[classIndex];
-                if (!class_conformsToProtocol(class, extendedProtcol.protocol) \
-                    || [NSStringFromClass(class) hasPrefix:@"__HWContainer_"]) {
+                if ([NSStringFromClass(class) hasPrefix:@"__HWContainer_"]
+                    || !class_conformsToProtocol(class, extendedProtcol.protocol)
+                    || !class_conformsToProtocol(class, extendedProtcol.targetProtocol)) {
+                    continue;
+                }
+                if (extendedProtcol.targetClass == [NSObject class]) {
+                    _hw_extension_inject_class(class, extendedProtcol);
                     continue;
                 }
                 if (extendedProtcol.targetClass != [NSObject class] && extendedProtcol.targetClass == class) {
                     _hw_extension_inject_class(class, extendedProtcol);
                     break;
-                }
-                if (extendedProtcol.targetClass == [NSObject class]) {
-                    _hw_extension_inject_class(class, extendedProtcol);
-                    continue;
                 }
             }
         }
