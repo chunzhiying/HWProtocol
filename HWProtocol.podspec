@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
 
 
   s.name         = "HWProtocol"
-  s.version      = "1.2.1"
+  s.version      = "1.2.2"
   s.summary      = "Protocol extension for Objective-C"
 
   s.description  = <<-DESC

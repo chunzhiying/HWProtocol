@@ -1,7 +1,7 @@
 # HWProtocol
 
 
-``` Cocoapods``` : ```pod 'HWProtocol', '= 1.2.1'```
+``` Cocoapods``` : ```pod 'HWProtocol', '= 1.2.2'```
 
 ```1.0.0``` : 添加```_Pragma ```忽视```@defs```的⚠️
 

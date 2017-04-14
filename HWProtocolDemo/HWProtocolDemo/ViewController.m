@@ -18,8 +18,8 @@
 
 @protocol aaa <NSObject> @end
 
-@interface Object : NSObject <Testable> @end @implementation Object @end
-@interface Object2 : NSObject <Testable, aaa> @end @implementation Object2 @end
+@interface Object : UIView <Testable> @end @implementation Object @end
+@interface Object2 : UIView <Testable, aaa> @end @implementation Object2 @end
 @interface ViewController () <Testable> @end
 
 @defs(Testable, whereProtocol(aaa))
@@ -30,7 +30,7 @@
 
 @end
 
-@defs(Testable, whereClass(Object))
+@defs(Testable, whereClass(UIView))
 
 - (void)showTestString {
     NSLog(@"ddd");
@@ -49,8 +49,9 @@
 @implementation ViewController
 
 - (void)viewDidLoad {
-    [[Object new] showTestString];
+   
     [[Object2 new] showTestString];
+    [[Object new] showTestString];
     [self showTestString];
 }
 

@@ -56,7 +56,7 @@ _Pragma("clang diagnostic pop") \
 @interface $container_class : $super <$protocol, $targetProtocol> @end \
 @implementation $container_class \
     + (void)load { \
-        _hw_extension_load(@protocol($protocol), [$container_class new], @protocol($targetProtocol)); \
+        _hw_extension_load(@protocol($protocol), $container_class.class, @protocol($targetProtocol)); \
     } \
 
 
@@ -66,4 +66,4 @@ _Pragma("clang diagnostic pop") \
 #define _hw_get_container_class_imp_concat($a, $b, $c) $a ## $b ## _ ## $c
 
 
-void _hw_extension_load(Protocol *protocol, NSObject *container, Protocol *targetProtocol);
+void _hw_extension_load(Protocol *protocol, Class containerClass, Protocol *targetProtocol);

@@ -1,4 +1,4 @@
-//
+ //
 //  HWProtocol.m
 //  HWProtocolDemo
 //
@@ -67,11 +67,9 @@ void _hw_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerCl
     extendedProtocol->classMethodCount += appendingClassMethodCount;
 }
 
-void _hw_extension_load(Protocol *protocol, NSObject *container, Protocol *targetProtocol) {
+void _hw_extension_load(Protocol *protocol, Class containerClass, Protocol *targetProtocol) {
     
     pthread_mutex_lock(&protocolsLoadingLock);
-    
-    Class containerClass = container.class;
     
     if (extendedProtcolCount >= extendedProtcolCapacity) {
         size_t newCapacity = 0;
@@ -87,7 +85,7 @@ void _hw_extension_load(Protocol *protocol, NSObject *container, Protocol *targe
     size_t resultIndex = SIZE_T_MAX;
     for (size_t index = 0; index < extendedProtcolCount; ++index) {
         if (allExtendedProtocols[index].protocol == protocol
-            && allExtendedProtocols[index].targetClass == [container superclass]
+            && allExtendedProtocols[index].targetClass == class_getSuperclass(containerClass)
             && allExtendedProtocols[index].targetProtocol == targetProtocol) {
             resultIndex = index;
             break;
@@ -97,7 +95,7 @@ void _hw_extension_load(Protocol *protocol, NSObject *container, Protocol *targe
     if (resultIndex == SIZE_T_MAX) {
         allExtendedProtocols[extendedProtcolCount] = (PKExtendedProtocol){
             .protocol = protocol,
-            .targetClass = [container superclass],
+            .targetClass = class_getSuperclass(containerClass),
             .targetProtocol = targetProtocol,
             .instanceMethods = NULL,
             .instanceMethodCount = 0,
@@ -171,9 +169,10 @@ __attribute__((constructor)) static void _hw_extension_inject_entry(void) {
                     _hw_extension_inject_class(class, extendedProtcol);
                     continue;
                 }
-                if (extendedProtcol.targetClass != [NSObject class] && extendedProtcol.targetClass == class) {
+                if (extendedProtcol.targetClass != [NSObject class]
+                    && [[class new] isKindOfClass:extendedProtcol.targetClass]) {
                     _hw_extension_inject_class(class, extendedProtcol);
-                    break;
+                    continue;
                 }
             }
         }
