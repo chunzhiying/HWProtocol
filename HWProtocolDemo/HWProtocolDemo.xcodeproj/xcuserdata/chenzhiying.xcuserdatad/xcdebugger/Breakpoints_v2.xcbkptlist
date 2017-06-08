@@ -10,11 +10,10 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "HWProtocolDemo/ViewController.m"
-            timestampString = "518608241.125393"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "58"
-            endingLineNumber = "58"
+            startingLineNumber = "63"
+            endingLineNumber = "63"
             landmarkName = "-viewDidLoad"
             landmarkType = "7">
          </BreakpointContent>
