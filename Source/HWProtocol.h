@@ -13,7 +13,7 @@
 
 #define HWProtocolExtension
 #define whereClass($class) $class
-#define whereProtocol($protocol) NSObject, $protocol
+#define whereProtocol(...) NSObject, __VA_ARGS__  // Max: 3
 
 
 // Utils
@@ -30,34 +30,51 @@
 
 
 // Interface
-#define _hw_extension(...)                  HW_MACROCAT(_hw_extension_, HW_META_argCount(__VA_ARGS__))(__VA_ARGS__)
+#define _hw_extension(...)            HW_MACROCAT(_hw_extension_, HW_META_argCount(__VA_ARGS__))(__VA_ARGS__)
 
 #define _hw_extension_1($protocol) \
-    _hw_extension_imp($protocol, _hw_get_container_class($protocol), NSObject, NSObject)
+_hw_extension_imp($protocol, _hw_get_container_class($protocol), NSObject, NSObject)
 
 #define _hw_extension_2($protocol, $super) \
-    _hw_extension_imp($protocol, _hw_get_container_class($protocol), $super, NSObject)
+_hw_extension_imp($protocol, _hw_get_container_class($protocol), $super, NSObject)
 
-#define _hw_extension_3($protocol, $super, $targetProtocol) \
-    _hw_extension_imp($protocol, _hw_get_container_class($protocol), $super, $targetProtocol)
+#define _hw_extension_3($protocol, $super, ...) \
+_hw_extension_imp($protocol, _hw_get_container_class($protocol), $super, __VA_ARGS__)
 
+#define _hw_extension_4($protocol, $super, ...) \
+_hw_extension_imp($protocol, _hw_get_container_class($protocol), $super, __VA_ARGS__)
+
+#define _hw_extension_5($protocol, $super, ...) \
+_hw_extension_imp($protocol, _hw_get_container_class($protocol), $super, __VA_ARGS__)
 
 
 // Implementation
-#define _hw_extension_imp($protocol, $container_class, $super, $targetProtocol) \
-    protocol $protocol; \
+#define _hw_extension_imp($protocol, $container_class, $super, ...) \
+protocol $protocol; \
 _Pragma("clang diagnostic push") \
 _Pragma("clang diagnostic ignored \"-Wprotocol\"") \
 _Pragma("clang diagnostic ignored \"-Wobjc-protocol-property-synthesis\"") \
-    _hw_extension_imp_($protocol, $container_class, $super, $targetProtocol) \
+_hw_extension_imp_($protocol, $container_class, $super, __VA_ARGS__) \
 _Pragma("clang diagnostic pop") \
 
-#define _hw_extension_imp_($protocol, $container_class, $super, $targetProtocol) \
-@interface $container_class : $super <$protocol, $targetProtocol> @end \
+#define _hw_extension_imp_($protocol, $container_class, $super, ...) \
+@interface $container_class : $super <$protocol, __VA_ARGS__> @end \
 @implementation $container_class \
-    + (void)load { \
-        _hw_extension_load(@protocol($protocol), $container_class.class, @protocol($targetProtocol)); \
-    } \
++ (void)load { \
+_hw_extension_load($protocol, $container_class.class, __VA_ARGS__); \
+} \
+
+
+#define _hw_extension_load(...)        HW_MACROCAT(_hw_extension_load_, HW_META_argCount(__VA_ARGS__))(__VA_ARGS__)
+
+#define _hw_extension_load_3($protocol, $container_class, $targetProtocol1) \
+_hw_extension_load_(@protocol($protocol), $container_class.class, @[@#$targetProtocol1])
+
+#define _hw_extension_load_4($protocol, $container_class, $targetProtocol1, $targetProtocol2) \
+_hw_extension_load_(@protocol($protocol), $container_class.class, @[@#$targetProtocol1, @#$targetProtocol2])
+
+#define _hw_extension_load_5($protocol, $container_class, $targetProtocol1, $targetProtocol2, $targetProtocol3) \
+_hw_extension_load_(@protocol($protocol), $container_class.class, @[@#$targetProtocol1, @#$targetProtocol2, @#$targetProtocol3])
 
 
 // Get container class name by counter
@@ -66,4 +83,6 @@ _Pragma("clang diagnostic pop") \
 #define _hw_get_container_class_imp_concat($a, $b, $c) $a ## $b ## _ ## $c
 
 
-void _hw_extension_load(Protocol *protocol, Class containerClass, Protocol *targetProtocol);
+void _hw_extension_load_(Protocol *protocol, Class containerClass, NSArray *protocolStr);
+
+

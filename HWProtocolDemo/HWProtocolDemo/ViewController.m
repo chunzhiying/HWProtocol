@@ -16,13 +16,18 @@
 
 @end
 
+@protocol bbb <NSObject>
+
+@end
+
+
 @protocol aaa <NSObject> @end
 
 @interface Object : UIView <Testable> @end @implementation Object @end
 @interface Object2 : UIView <Testable, aaa> @end @implementation Object2 @end
 @interface ViewController () <Testable> @end
 
-@defs(Testable, whereProtocol(aaa))
+@defs(Testable, whereProtocol(aaa, bbb))
 
 - (void)showTestString {
     NSLog(@"ccc");
@@ -50,8 +55,8 @@
 
 - (void)viewDidLoad {
    
-    [[Object2 new] showTestString];
     [[Object new] showTestString];
+    [[Object2 new] showTestString];
     [self showTestString];
 }
 

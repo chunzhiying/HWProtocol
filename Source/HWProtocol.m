@@ -1,4 +1,4 @@
- //
+//
 //  HWProtocol.m
 //  HWProtocolDemo
 //
@@ -19,7 +19,7 @@
 typedef struct {
     Protocol *__unsafe_unretained protocol;
     Class __unsafe_unretained targetClass;
-    Protocol *__unsafe_unretained targetProtocol;
+    Protocol *__unsafe_unretained targetProtocols[3];
     Method *instanceMethods;
     unsigned instanceMethodCount;
     Method *classMethods;
@@ -67,7 +67,7 @@ void _hw_extension_merge(PKExtendedProtocol *extendedProtocol, Class containerCl
     extendedProtocol->classMethodCount += appendingClassMethodCount;
 }
 
-void _hw_extension_load(Protocol *protocol, Class containerClass, Protocol *targetProtocol) {
+void _hw_extension_load_(Protocol *protocol, Class containerClass, NSArray *protocolStr) {
     
     pthread_mutex_lock(&protocolsLoadingLock);
     
@@ -82,11 +82,22 @@ void _hw_extension_load(Protocol *protocol, Class containerClass, Protocol *targ
         extendedProtcolCapacity = newCapacity;
     }
     
+    Protocol *__unsafe_unretained targetProtocols[3];
+    targetProtocols[0] = @protocol(NSObject);
+    targetProtocols[1] = @protocol(NSObject);
+    targetProtocols[2] = @protocol(NSObject);
+    
+    for (NSInteger i = 0; i < protocolStr.count; i++) {
+        targetProtocols[i] = NSProtocolFromString([protocolStr objectAtIndex:i]);
+    }
+    
     size_t resultIndex = SIZE_T_MAX;
     for (size_t index = 0; index < extendedProtcolCount; ++index) {
         if (allExtendedProtocols[index].protocol == protocol
             && allExtendedProtocols[index].targetClass == class_getSuperclass(containerClass)
-            && allExtendedProtocols[index].targetProtocol == targetProtocol) {
+            && allExtendedProtocols[index].targetProtocols[0] == targetProtocols[0]
+            && allExtendedProtocols[index].targetProtocols[1] == targetProtocols[1]
+            && allExtendedProtocols[index].targetProtocols[2] == targetProtocols[2]) {
             resultIndex = index;
             break;
         }
@@ -96,12 +107,14 @@ void _hw_extension_load(Protocol *protocol, Class containerClass, Protocol *targ
         allExtendedProtocols[extendedProtcolCount] = (PKExtendedProtocol){
             .protocol = protocol,
             .targetClass = class_getSuperclass(containerClass),
-            .targetProtocol = targetProtocol,
             .instanceMethods = NULL,
             .instanceMethodCount = 0,
             .classMethods = NULL,
             .classMethodCount = 0,
         };
+        allExtendedProtocols[extendedProtcolCount].targetProtocols[0] = targetProtocols[0];
+        allExtendedProtocols[extendedProtcolCount].targetProtocols[1] = targetProtocols[1];
+        allExtendedProtocols[extendedProtcolCount].targetProtocols[2] = targetProtocols[2];
         resultIndex = extendedProtcolCount;
         extendedProtcolCount++;
     }
@@ -161,10 +174,17 @@ __attribute__((constructor)) static void _hw_extension_inject_entry(void) {
             for (unsigned classIndex = 0; classIndex < classCount; ++classIndex) {
                 Class class = allClasses[classIndex];
                 if ([NSStringFromClass(class) hasPrefix:@"__HWContainer_"]
-                    || !class_conformsToProtocol(class, extendedProtcol.protocol)
-                    || !class_conformsToProtocol(class, extendedProtcol.targetProtocol)) {
+                    || !class_conformsToProtocol(class, extendedProtcol.protocol)) {
                     continue;
                 }
+                
+                if (!class_conformsToProtocol(class, extendedProtcol.targetProtocols[0])
+                    || !class_conformsToProtocol(class, extendedProtcol.targetProtocols[1])
+                    || !class_conformsToProtocol(class, extendedProtcol.targetProtocols[2])) {
+                    
+                    continue;
+                }
+                
                 if (extendedProtcol.targetClass == [NSObject class]) {
                     _hw_extension_inject_class(class, extendedProtcol);
                     continue;
